@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "humanmade/tabbed-content",
+  "version": "0.1.0",
+  "title": "Tabbed Content",
+  "category": "design",
+  "icon": "archive",
+  "description": "A tabbed content container where each tab reveals an associated image or video.",
+  "keywords": [
+    "tabs",
+    "tabbed",
+    "accordion",
+    "carousel"
+  ],
+  "textdomain": "hm-tabbed-content",
+  "attributes": {},
+  "render": "file:./render.php",
+  "supports": {
+    "align": false,
+    "html": false,
+    "spacing": {
+      "margin": true,
+      "padding": false
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "viewScript": "file:./view.js"
+}

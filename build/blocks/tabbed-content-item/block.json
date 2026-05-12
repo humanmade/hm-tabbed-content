@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "humanmade/tabbed-content-item",
+  "version": "0.1.0",
+  "title": "Tabbed Content Item",
+  "category": "design",
+  "icon": "list-view",
+  "parent": [
+    "humanmade/tabbed-content"
+  ],
+  "description": "A single tab inside a Tabbed Content block.",
+  "keywords": [
+    "tab",
+    "tabbed",
+    "item"
+  ],
+  "textdomain": "hm-tabbed-content",
+  "attributes": {
+    "title": {
+      "type": "string",
+      "source": "html",
+      "selector": "h3",
+      "default": ""
+    },
+    "id": {
+      "type": "integer"
+    },
+    "url": {
+      "type": "string",
+      "default": ""
+    },
+    "alt": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "align": false,
+    "html": false,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css"
+}

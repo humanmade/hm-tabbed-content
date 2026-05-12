@@ -49,3 +49,5 @@ jobs:
           body: "Automated release of version ${{ github.event.inputs.version }}"
           draft: false
           prerelease: false
+          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
