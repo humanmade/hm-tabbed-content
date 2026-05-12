@@ -1,0 +1,23 @@
+{
+	"name": "hm-tabbed-content",
+	"description": "A tabbed content block where each tab reveals an associated image or video.",
+	"author": "Human Made Limited",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"env:cli": "npx @wordpress/env run cli",
+		"env:destroy": "npx @wordpress/env destroy",
+		"env:start": "npx @wordpress/env start",
+		"env:stop": "npx @wordpress/env stop",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "wp-scripts start"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.10.0"
+	}
+}

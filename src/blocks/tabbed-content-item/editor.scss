@@ -1,0 +1,17 @@
+.tabbed-content-item {
+	// Hide content when not expanded.
+	&:not(.is-open) {
+		.tabbed-content-item__content {
+			display: none;
+		}
+	}
+
+	// Override frontend styles in editor when expanded.
+	&.is-open {
+		.tabbed-content-item__content {
+			height: auto !important;
+			opacity: 1 !important;
+			overflow: visible !important;
+		}
+	}
+}

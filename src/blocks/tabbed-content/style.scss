@@ -1,0 +1,160 @@
+/**
+ * Styles applied both on the front of the site and in the editor.
+ */
+
+.tabbed-content {
+
+	&-container {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 40px;
+		min-height: 600px;
+
+		@media (max-width: 782px) {
+			grid-template-columns: 1fr;
+			min-height: auto;
+		}
+	}
+
+	.tabbed-content-container__left {
+		height: 100%;
+		width: 100%;
+		display: flex;
+		flex-flow: column;
+		justify-content: space-between;
+	}
+
+	.tabbed-content-header {
+		margin-bottom: var(--wp--preset--spacing--60);
+		margin-top: 0;
+		align-self: flex-start;
+	}
+
+	.tabbed-content-item {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		overflow: visible;
+		opacity: 0.5;
+		transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		position: relative;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+
+		&:hover {
+			opacity: 1;
+
+			.wp-block-heading {
+				text-shadow: 0 0 5px rgba(255, 255, 255, .2);
+			}
+		}
+
+		&.is-open {
+			opacity: 1;
+		}
+
+		.tabbed-content-item__title {
+			cursor: pointer;
+			display: flex;
+			transition: background-color 0.3s ease;
+			position: relative;
+			z-index: 2;
+			outline: none;
+			font-size: var(--wp--preset--font-size--h-4);
+			margin-top: 0;
+			margin-bottom: var(--wp--preset--spacing--30);
+		}
+
+		.tabbed-content-item__content {
+			height: 0;
+			opacity: 0;
+			transition:
+				height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+				opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+			overflow: hidden;
+			pointer-events: none;
+			will-change: height, opacity;
+		}
+
+		&.is-open .tabbed-content-item__content {
+			opacity: 1;
+			pointer-events: auto;
+			position: static;
+			top: auto;
+		}
+	}
+
+	.tabbed-content-container__right {
+		display: flex;
+		align-items: flex-end;
+		position: relative;
+
+		@media (max-width: 782px) {
+			display: none;
+		}
+	}
+
+	.tabbed-content-cover-image {
+		width: 100%;
+		height: 100%;
+		display: grid;
+		align-items: center;
+		justify-items: center;
+
+		.cover-image {
+			border-radius: var(--wp--preset--border-radius--lg);
+			grid-area: 1 / 1;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			z-index: 0;
+			opacity: 0;
+		}
+	}
+}
+
+.cover-image-desktop {
+	display: block;
+}
+
+.tabbed-content-item__image {
+	aspect-ratio: 4 / 5;
+	overflow: hidden;
+
+	img,
+	video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+}
+
+.tabbed-content-cover-image {
+	.cover-image {
+		aspect-ratio: 4 / 5;
+	}
+}
+
+@media (min-width: 782px) {
+	.tabbed-content-item figure,
+	.tabbed-content-item .tabbed-content-item__image {
+		display: none !important;
+	}
+}
+
+@media (max-width: 782px) {
+	.cover-image-desktop {
+		display: none !important;
+	}
+
+	.tabbed-content-item__image {
+		aspect-ratio: 1;
+	}
+
+	.tabbed-content-cover-image .cover-image {
+		aspect-ratio: 1;
+	}
+}
