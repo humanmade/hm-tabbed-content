@@ -1,144 +1,54 @@
-.tabbed-content {
-	max-width: var(--wp--style--global--content-size);
+/**
+ * Editor-only adjustments for the Tabbed Content block.
+ *
+ * The editor renders the heading group and the items group as inner blocks
+ * sequentially — it does not attempt to emulate the front-end tab UI. The
+ * goal is to make the editing experience navigable, not pixel-accurate.
+ */
 
-	&-container {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 40px;
-		align-items: start;
-	}
+.wp-block-humanmade-tabbed-content {
 
-	.tabbed-content-container__right {
-		aspect-ratio: 4 / 5;
-	}
+	.tabbed-content__items {
 
-	.tabbed-content-cover-image {
-		width: 100%;
-		aspect-ratio: 4 / 5;
-		background: transparent;
-		border-radius: 12px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-
-		img,
-		video {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			display: block;
-			border-radius: 16px;
-		}
-
-		&__placeholder {
-			width: 100%;
-			height: 100%;
+		/* Items in the editor stack vertically with a subtle separator
+		 * so authors can see them as a list. */
+		> .block-editor-inner-blocks > .block-editor-block-list__layout {
 			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: rgba(255, 255, 255, 0.5);
-			border: 2px solid rgba(255, 255, 255, 1);
-			border-radius: 12px;
-			color: rgba(255, 255, 255, 1);
-			font-size: 16px;
-			font-weight: 500;
+			flex-direction: column;
+			gap: var(--wp--preset--spacing--20, 0.5rem);
+		}
+	}
+
+	/* In the tabs-top variant, the items group is conceptually horizontal;
+	 * a hint of the row layout helps authors visualize. */
+	&.is-layout-top .tabbed-content__items {
+
+		> .block-editor-inner-blocks > .block-editor-block-list__layout {
+			flex-direction: row;
+			flex-wrap: wrap;
 		}
 	}
 
 	.tabbed-content-item {
-		border: 1px solid rgba(255, 255, 255, 0.2);
+		border: 1px solid rgba(0, 0, 0, 0.08);
 		border-radius: 8px;
-		padding: 1rem;
-		background: transparent;
-		transition: all 0.2s ease;
+		padding: 0.75rem;
+		min-width: 12rem;
 
-		&:hover {
-			border-color: rgba(255, 255, 255, 0.4);
-			background: rgba(255, 255, 255, 0.05);
+		&.is-open {
+			border-color: rgba(0, 0, 0, 0.2);
 		}
 
-		&__title {
-			margin: 0 0 1rem 0;
-			font-size: 1.25rem;
+		.tabbed-content-item__title {
+			display: block;
 			font-weight: 600;
-			cursor: pointer;
-
-			&:empty::before {
-				content: attr(placeholder);
-				color: rgba(255, 255, 255, 0.5);
-			}
+			margin-bottom: 0.5rem;
 		}
 
-		&__image-preview {
-			margin: 1rem 0;
-			aspect-ratio: 4 / 5;
-
-			img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				border-radius: 4px;
-			}
-		}
-
-		&__image-placeholder {
-			margin: 1rem 0;
-			padding: 2rem;
-			background: rgba(255, 255, 255, 0.1);
-			border: 2px dashed rgba(255, 255, 255, 0.3);
-			border-radius: 4px;
-			text-align: center;
-			aspect-ratio: 4 / 5;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-
-			button {
-				background: transparent;
-				border: 1px solid rgba(255, 255, 255, 0.5);
-				color: inherit;
-			}
-		}
-
-		&__content {
-			margin-top: 1rem;
-
-			p,
-			figure {
-				display: block !important;
-				background: transparent !important;
-			}
-
-			p {
-				max-height: 100%;
-				opacity: 1;
-				position: relative;
-				background: transparent;
-			}
-
-			.wp-block-paragraph,
-			.wp-block-buttons,
-			.wp-block-button {
-				background: transparent !important;
-			}
-		}
-
-		&.is-collapsed {
-			.tabbed-content-item__image-preview,
-			.tabbed-content-item__image-placeholder,
-			.tabbed-content-item__content {
-				display: none;
-			}
-
-			.tabbed-content-item__title {
-				margin-bottom: 0;
-			}
-		}
-
-		&.is-expanded {
-			border-color: rgba(255, 255, 255, 0.5);
-			background: rgba(255, 255, 255, 0.08);
+		.tabbed-content-item__content {
+			margin-top: 0.5rem;
+			padding-top: 0.5rem;
+			border-top: 1px dashed rgba(0, 0, 0, 0.1);
 		}
 	}
 }

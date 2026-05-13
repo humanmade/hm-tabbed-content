@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "humanmade/tabbed-content-item",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"title": "Tabbed Content Item",
 	"category": "design",
 	"icon": "list-view",
@@ -13,8 +13,6 @@
 	"attributes": {
 		"title": {
 			"type": "string",
-			"source": "html",
-			"selector": "h3",
 			"default": ""
 		},
 		"id": {
@@ -27,6 +25,17 @@
 		"alt": {
 			"type": "string",
 			"default": ""
+		},
+		"thumbnailId": {
+			"type": "integer"
+		},
+		"thumbnailUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"thumbnailAlt": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {
@@ -35,6 +44,16 @@
 		"spacing": {
 			"margin": true,
 			"padding": true
+		},
+		"color": {
+			"background": true,
+			"text": true,
+			"link": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true
 		}
 	},
 	"editorScript": "file:./index.js",

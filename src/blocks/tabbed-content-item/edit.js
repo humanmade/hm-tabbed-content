@@ -7,9 +7,14 @@ import {
 	RichText,
 	MediaUpload,
 	MediaUploadCheck,
-	BlockControls,
+	InspectorControls,
 } from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import {
+	Button,
+	PanelBody,
+	__experimentalHStack as HStack,
+	__experimentalVStack as VStack,
+} from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
 
@@ -18,11 +23,18 @@ import { useEffect } from '@wordpress/element';
  */
 import './editor.scss';
 
-const ALLOWED_BLOCKS = [ 'core/paragraph', 'core/buttons', 'core/list' ];
 const TEMPLATE = [ [ 'core/paragraph' ] ];
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
-	const { title, id, url, alt } = attributes;
+	const {
+		title,
+		id,
+		url,
+		alt,
+		thumbnailId,
+		thumbnailUrl,
+		thumbnailAlt,
+	} = attributes;
 
 	const isExpanded = useSelect(
 		( select ) => {
@@ -44,12 +56,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		{ className: 'tabbed-content-item__content' },
 		{
 			templateLock: false,
-			allowedBlocks: ALLOWED_BLOCKS,
 			template: TEMPLATE,
 		}
 	);
 
-	// Sync image data from Media Library when ID changes.
+	// Sync panel media data from Media Library when ID changes.
 	const { mediaUrl, mediaAlt } = useSelect(
 		( select ) => {
 			if ( ! id ) {
@@ -73,7 +84,46 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		}
 	}, [ id, mediaUrl, mediaAlt, url, alt, setAttributes ] );
 
-	const onSelectImage = ( media ) => {
+	// Sync thumbnail data from Media Library when ID changes.
+	const { thumbMediaUrl, thumbMediaAlt } = useSelect(
+		( select ) => {
+			if ( ! thumbnailId ) {
+				return {};
+			}
+			const media = select( 'core' ).getMedia( thumbnailId );
+			return {
+				thumbMediaUrl: media?.source_url,
+				thumbMediaAlt: media?.alt_text,
+			};
+		},
+		[ thumbnailId ]
+	);
+
+	useEffect( () => {
+		if (
+			thumbnailId &&
+			thumbMediaUrl &&
+			thumbMediaUrl !== thumbnailUrl
+		) {
+			setAttributes( { thumbnailUrl: thumbMediaUrl } );
+		}
+		if (
+			thumbnailId &&
+			thumbMediaAlt !== undefined &&
+			thumbMediaAlt !== thumbnailAlt
+		) {
+			setAttributes( { thumbnailAlt: thumbMediaAlt } );
+		}
+	}, [
+		thumbnailId,
+		thumbMediaUrl,
+		thumbMediaAlt,
+		thumbnailUrl,
+		thumbnailAlt,
+		setAttributes,
+	] );
+
+	const onSelectMedia = ( media ) => {
 		setAttributes( {
 			id: media.id,
 			url: media.url,
@@ -81,7 +131,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		} );
 	};
 
-	const onRemoveImage = () => {
+	const onRemoveMedia = () => {
 		setAttributes( {
 			id: undefined,
 			url: '',
@@ -89,39 +139,129 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		} );
 	};
 
+	const onSelectThumbnail = ( media ) => {
+		setAttributes( {
+			thumbnailId: media.id,
+			thumbnailUrl: media.url,
+			thumbnailAlt: media.alt || '',
+		} );
+	};
+
+	const onRemoveThumbnail = () => {
+		setAttributes( {
+			thumbnailId: undefined,
+			thumbnailUrl: '',
+			thumbnailAlt: '',
+		} );
+	};
+
 	return (
 		<>
-			<BlockControls>
-				<ToolbarGroup>
-					<MediaUploadCheck>
-						<MediaUpload
-							onSelect={ onSelectImage }
-							allowedTypes={ [ 'image', 'video' ] }
-							value={ id }
-							render={ ( { open } ) => (
-								<ToolbarButton onClick={ open }>
-									{ id ? 'Replace Media' : 'Add Media' }
-								</ToolbarButton>
-							) }
-						/>
-					</MediaUploadCheck>
-					{ id && (
-						<ToolbarButton onClick={ onRemoveImage }>
-							Remove Media
-						</ToolbarButton>
-					) }
-				</ToolbarGroup>
-			</BlockControls>
+			<InspectorControls>
+				<PanelBody title="Tab thumbnail" initialOpen={ true }>
+					<VStack spacing={ 4 }>
+						<p>
+							Shown as the tab affordance in layouts that
+							display image-based tabs.
+						</p>
+						{ thumbnailUrl && (
+							<img
+								src={ thumbnailUrl }
+								alt={ thumbnailAlt || '' }
+								style={ {
+									maxWidth: '100%',
+									height: 'auto',
+								} }
+							/>
+						) }
+						<MediaUploadCheck>
+							<HStack>
+								<MediaUpload
+									onSelect={ onSelectThumbnail }
+									allowedTypes={ [ 'image' ] }
+									value={ thumbnailId }
+									render={ ( { open } ) => (
+										<Button
+											variant="secondary"
+											onClick={ open }
+										>
+											{ thumbnailUrl
+												? 'Replace thumbnail'
+												: 'Add thumbnail' }
+										</Button>
+									) }
+								/>
+								{ thumbnailUrl && (
+									<Button
+										variant="link"
+										isDestructive
+										onClick={ onRemoveThumbnail }
+									>
+										Remove
+									</Button>
+								) }
+							</HStack>
+						</MediaUploadCheck>
+					</VStack>
+				</PanelBody>
+				<PanelBody title="Panel media" initialOpen={ true }>
+					<VStack spacing={ 4 }>
+						<p>
+							Shown in the media panel when this tab is
+							active.
+						</p>
+						{ url && (
+							<img
+								src={ url }
+								alt={ alt || '' }
+								style={ {
+									maxWidth: '100%',
+									height: 'auto',
+								} }
+							/>
+						) }
+						<MediaUploadCheck>
+							<HStack>
+								<MediaUpload
+									onSelect={ onSelectMedia }
+									allowedTypes={ [ 'image', 'video' ] }
+									value={ id }
+									render={ ( { open } ) => (
+										<Button
+											variant="secondary"
+											onClick={ open }
+										>
+											{ url
+												? 'Replace media'
+												: 'Add media' }
+										</Button>
+									) }
+								/>
+								{ url && (
+									<Button
+										variant="link"
+										isDestructive
+										onClick={ onRemoveMedia }
+									>
+										Remove
+									</Button>
+								) }
+							</HStack>
+						</MediaUploadCheck>
+					</VStack>
+				</PanelBody>
+			</InspectorControls>
 
-			<div { ...blockProps } data-image-cover-url={ url || undefined }>
+			<div { ...blockProps }>
 				<RichText
-					tagName="h3"
+					tagName="span"
 					className="tabbed-content-item__title"
 					value={ title }
 					onChange={ ( newTitle ) =>
 						setAttributes( { title: newTitle } )
 					}
-					placeholder="Enter title..."
+					placeholder="Tab title..."
+					allowedFormats={ [ 'core/bold', 'core/italic' ] }
 				/>
 
 				{ isExpanded && <div { ...innerBlocksProps } /> }
