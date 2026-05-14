@@ -9,7 +9,12 @@ import {
 import { createBlock } from '@wordpress/blocks';
 import { ToolbarButton, ToolbarGroup } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { chevronUp, chevronDown, plus, trash } from '@wordpress/icons';
+import {
+	ChevronUpIcon,
+	ChevronDownIcon,
+	PlusIcon,
+	TrashIcon,
+} from '../tabbed-content/icons';
 
 /**
  * Recommended starter content for a tab — a short heading. Authors are
@@ -122,24 +127,24 @@ export default function Edit( { clientId } ) {
 			<BlockControls>
 				<ToolbarGroup>
 					<ToolbarButton
-						icon={ chevronUp }
+						icon={ ChevronUpIcon }
 						label="Move tab earlier"
 						onClick={ onMoveUp }
 						disabled={ isFirst }
 					/>
 					<ToolbarButton
-						icon={ chevronDown }
+						icon={ ChevronDownIcon }
 						label="Move tab later"
 						onClick={ onMoveDown }
 						disabled={ isLast }
 					/>
 					<ToolbarButton
-						icon={ plus }
+						icon={ PlusIcon }
 						label="Add tab after"
 						onClick={ onAddAfter }
 					/>
 					<ToolbarButton
-						icon={ trash }
+						icon={ TrashIcon }
 						label="Delete tab"
 						onClick={ onDelete }
 						disabled={ ! canDelete }

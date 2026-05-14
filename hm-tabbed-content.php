@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       HM Tabbed Content
  * Description:       A tabbed content block where each tab reveals an associated image or video alongside its content.
- * Version:           0.2.0
+ * Version:           0.2.1
  * Requires at least: 6.7
  * Requires PHP:      8.0
  * Author:            Human Made Limited

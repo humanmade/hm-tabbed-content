@@ -6,12 +6,12 @@ import { createBlock } from '@wordpress/blocks';
 import { Button } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
-import { plus } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
+import { PlusIcon } from './icons';
 
 const ITEMS_GROUP_ALLOWED_BLOCKS = [ 'humanmade/tabbed-content-item' ];
 
@@ -151,7 +151,7 @@ export default function Edit( { attributes, clientId } ) {
 				>
 					<Button
 						variant="secondary"
-						icon={ plus }
+						icon={ PlusIcon }
 						onClick={ onAddTab }
 					>
 						Add tab
