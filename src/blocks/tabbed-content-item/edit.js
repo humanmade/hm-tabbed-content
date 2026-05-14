@@ -15,13 +15,14 @@ import {
 	__experimentalHStack as HStack,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
+import { STORE_NAME } from '../tabbed-content/store';
 
 const TEMPLATE = [ [ 'core/paragraph' ] ];
 
@@ -36,20 +37,67 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		thumbnailAlt,
 	} = attributes;
 
-	const isExpanded = useSelect(
-		( select ) => {
-			const { isBlockSelected, hasSelectedInnerBlock } =
-				select( 'core/block-editor' );
-			return (
-				isBlockSelected( clientId ) ||
-				hasSelectedInnerBlock( clientId, true )
-			);
-		},
-		[ clientId ]
-	);
+	// Resolve our position among siblings, the parent tabbed-content
+	// clientId (used to scope the active-tab store), our own selection
+	// state, and the currently active tab for this parent.
+	const { index, parentClientId, isSelectedOrInner, activeIndex } =
+		useSelect(
+			( select ) => {
+				const {
+					getBlockIndex,
+					getBlockRootClientId,
+					isBlockSelected,
+					hasSelectedInnerBlock,
+				} = select( 'core/block-editor' );
+				// The immediate parent is the "items" Group; the grandparent
+				// is the tabbed-content block that scopes our active-tab
+				// state.
+				const itemsGroupClientId = getBlockRootClientId( clientId );
+				const tabbedContentClientId = itemsGroupClientId
+					? getBlockRootClientId( itemsGroupClientId )
+					: '';
+				return {
+					index: getBlockIndex( clientId ),
+					parentClientId: tabbedContentClientId,
+					isSelectedOrInner:
+						isBlockSelected( clientId ) ||
+						hasSelectedInnerBlock( clientId, true ),
+					activeIndex:
+						select( STORE_NAME ).getActiveIndex(
+							tabbedContentClientId
+						),
+				};
+			},
+			[ clientId ]
+		);
+
+	const { setActiveIndex } = useDispatch( STORE_NAME );
+	const { selectBlock } = useDispatch( 'core/block-editor' );
+
+	// When this item (or anything inside it) becomes the selection, promote
+	// it to the active tab. Leaving the block does not reset — the last
+	// selected tab stays active.
+	useEffect( () => {
+		if (
+			isSelectedOrInner &&
+			index >= 0 &&
+			parentClientId &&
+			index !== activeIndex
+		) {
+			setActiveIndex( parentClientId, index );
+		}
+	}, [
+		isSelectedOrInner,
+		index,
+		activeIndex,
+		parentClientId,
+		setActiveIndex,
+	] );
+
+	const isActive = index === activeIndex;
 
 	const blockProps = useBlockProps( {
-		className: `tabbed-content-item ${ isExpanded ? 'is-open' : '' }`,
+		className: `tabbed-content-item ${ isActive ? 'is-active' : '' }`,
 	} );
 
 	const innerBlocksProps = useInnerBlocksProps(
@@ -253,18 +301,44 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			</InspectorControls>
 
 			<div { ...blockProps }>
-				<RichText
-					tagName="span"
-					className="tabbed-content-item__title"
-					value={ title }
-					onChange={ ( newTitle ) =>
-						setAttributes( { title: newTitle } )
-					}
-					placeholder="Tab title..."
-					allowedFormats={ [ 'core/bold', 'core/italic' ] }
-				/>
+				<div
+					className="tabbed-content-item__tab"
+					onClick={ () => {
+						// Clicking anywhere in the tab area — including
+						// the thumbnail — should activate this tab. The
+						// RichText title handles its own click for caret
+						// placement; for the rest, route through block
+						// selection so the useEffect above updates the
+						// active index.
+						selectBlock( clientId );
+					} }
+				>
+					{ thumbnailUrl && (
+						<span className="tabbed-content-item__tab-thumbnail">
+							<img
+								src={ thumbnailUrl }
+								alt={ thumbnailAlt || '' }
+							/>
+						</span>
+					) }
+					<RichText
+						tagName="span"
+						className="tabbed-content-item__title"
+						value={ title }
+						onChange={ ( newTitle ) =>
+							setAttributes( { title: newTitle } )
+						}
+						placeholder="Tab title..."
+						allowedFormats={ [ 'core/bold', 'core/italic' ] }
+					/>
+				</div>
 
-				{ isExpanded && <div { ...innerBlocksProps } /> }
+				<div
+					className="tabbed-content-item__panel"
+					hidden={ ! isActive }
+				>
+					<div { ...innerBlocksProps } />
+				</div>
 			</div>
 		</>
 	);
