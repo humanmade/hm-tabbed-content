@@ -1,7 +1,0 @@
-{
-	"settings": {
-		"import/core-modules": [
-			"@wordpress/icons"
-		]
-	}
-}
