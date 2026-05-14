@@ -29,9 +29,9 @@ export default function Edit( { clientId } ) {
 				isBlockSelected,
 				hasSelectedInnerBlock,
 			} = select( 'core/block-editor' );
-			const itemsGroupClientId = getBlockRootClientId( clientId );
-			const tabbedContentClientId = itemsGroupClientId
-				? getBlockRootClientId( itemsGroupClientId )
+			const groupId = getBlockRootClientId( clientId );
+			const tabbedContentClientId = groupId
+				? getBlockRootClientId( groupId )
 				: '';
 			return {
 				index: getBlockIndex( clientId ),
@@ -48,7 +48,6 @@ export default function Edit( { clientId } ) {
 	);
 
 	const { setActiveIndex } = useDispatch( STORE_NAME );
-	const { selectBlock } = useDispatch( 'core/block-editor' );
 
 	// When this item (or anything inside it) becomes the selection, promote
 	// it to the active tab. Leaving the block does not reset — the last
@@ -74,14 +73,6 @@ export default function Edit( { clientId } ) {
 
 	const blockProps = useBlockProps( {
 		className: `tabbed-content-item ${ isActive ? 'is-active' : '' }`,
-		onClick: () => {
-			// Activating the item — even via a click inside the tab or
-			// panel — routes through block selection so the useEffect
-			// above updates the active index. The handler is safe to fire
-			// on every descendant click because selectBlock is idempotent
-			// when this block is already selected.
-			selectBlock( clientId );
-		},
 	} );
 
 	const innerBlocksProps = useInnerBlocksProps( blockProps, {

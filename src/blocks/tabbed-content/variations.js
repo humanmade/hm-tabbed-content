@@ -59,7 +59,6 @@ const itemsTemplate = ( items ) => [
 	[
 		'core/group',
 		{
-			lock: { move: true, remove: true },
 			metadata: { name: 'Tabs' },
 			className: 'tabbed-content__items',
 		},

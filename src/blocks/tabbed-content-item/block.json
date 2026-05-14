@@ -6,7 +6,7 @@
 	"title": "Tabbed Content Item",
 	"category": "design",
 	"icon": "list-view",
-	"parent": [ "humanmade/tabbed-content" ],
+	"ancestor": [ "humanmade/tabbed-content" ],
 	"description": "A pairing of a tab affordance and its associated content panel.",
 	"keywords": [ "tab", "tabbed", "item" ],
 	"textdomain": "hm-tabbed-content",

@@ -16,6 +16,15 @@
 		gap: var(--wp--preset--spacing--40, 1rem);
 	}
 
+	/* Custom appender — a sibling of the items group, offering an obvious
+	 * "Add tab" affordance since the items group is locked and its own
+	 * native appender is subtle. */
+	.tabbed-content__appender {
+		display: flex;
+		justify-content: center;
+		margin-top: var(--wp--preset--spacing--40, 1rem);
+	}
+
 	/* Item wrappers project their tab + panel directly into the grid. */
 	.tabbed-content-item {
 		display: contents;
