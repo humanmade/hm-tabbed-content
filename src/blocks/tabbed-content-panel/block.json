@@ -1,0 +1,37 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "humanmade/tabbed-content-panel",
+	"version": "0.1.0",
+	"title": "Tabbed Content Panel",
+	"category": "design",
+	"icon": "tablet",
+	"parent": [ "humanmade/tabbed-content-item" ],
+	"description": "The content revealed when its sibling tab is active — accepts any block.",
+	"keywords": [ "tab", "tabbed", "panel" ],
+	"textdomain": "hm-tabbed-content",
+	"supports": {
+		"align": false,
+		"html": false,
+		"reusable": false,
+		"inserter": false,
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		},
+		"color": {
+			"background": true,
+			"text": true,
+			"link": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}

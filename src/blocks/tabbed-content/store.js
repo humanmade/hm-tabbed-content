@@ -7,10 +7,13 @@
  * the store when they (or their descendants) gain selection; nothing
  * resets it when selection leaves the block, so the last-selected tab
  * remains active.
+ *
+ * The store name is exported separately in `./store-name.js` so consumer
+ * blocks (item/tab/panel) can reference it without pulling the
+ * registration side-effect into their bundle.
  */
-import { createReduxStore, register } from '@wordpress/data';
-
-export const STORE_NAME = 'humanmade/tabbed-content';
+import { createReduxStore, register, select } from '@wordpress/data';
+import { STORE_NAME } from './store-name';
 
 const DEFAULT_STATE = {};
 
@@ -43,5 +46,15 @@ function reducer( state = DEFAULT_STATE, action ) {
 	return state;
 }
 
-const store = createReduxStore( STORE_NAME, { reducer, actions, selectors } );
-register( store );
+// Guard against double-registration in case this module is somehow loaded
+// from more than one bundle.
+if ( ! select( STORE_NAME ) ) {
+	const store = createReduxStore( STORE_NAME, {
+		reducer,
+		actions,
+		selectors,
+	} );
+	register( store );
+}
+
+export { STORE_NAME };

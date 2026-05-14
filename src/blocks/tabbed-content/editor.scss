@@ -3,8 +3,8 @@
  *
  * The editor approximates the front-end tab UI: tabs render as a row (top
  * layout) or column (side layout) and only the active item's panel is
- * visible. Each item block wrapper uses `display: contents` so its inner
- * tab + panel become direct grid children of the items group.
+ * visible. Each tabbed-content-item uses `display: contents` so its tab
+ * and panel children become direct grid children of the items group.
  */
 
 .wp-block-humanmade-tabbed-content {
@@ -16,13 +16,12 @@
 		gap: var(--wp--preset--spacing--40, 1rem);
 	}
 
-	/* Item wrappers contribute their children directly to the grid so we
-	 * can place tabs and panels independently. */
+	/* Item wrappers project their tab + panel directly into the grid. */
 	.tabbed-content-item {
 		display: contents;
 	}
 
-	.tabbed-content-item__tab {
+	.wp-block-humanmade-tabbed-content-tab {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
@@ -36,38 +35,22 @@
 		transition: opacity 0.15s ease, border-color 0.15s ease;
 
 		&:hover,
-		&:focus-visible {
+		&:focus-within {
 			opacity: 1;
-		}
-
-		&:focus-visible {
-			outline: 2px solid currentColor;
-			outline-offset: 2px;
 		}
 	}
 
-	.tabbed-content-item.is-active .tabbed-content-item__tab {
+	.tabbed-content-item.is-active .wp-block-humanmade-tabbed-content-tab {
 		opacity: 1;
 		border-color: rgba(0, 0, 0, 0.4);
 	}
 
-	.tabbed-content-item__tab-thumbnail img {
-		display: block;
-		width: 100%;
-		height: auto;
-		border-radius: inherit;
-	}
-
-	.tabbed-content-item__title {
-		font-weight: 600;
-	}
-
-	.tabbed-content-item__panel {
+	.wp-block-humanmade-tabbed-content-panel {
 		min-width: 0;
+	}
 
-		&[hidden] {
-			display: none;
-		}
+	.tabbed-content-item:not(.is-active) .wp-block-humanmade-tabbed-content-panel {
+		display: none;
 	}
 
 	/* Top layout: tabs across the top row, active panel spanning row 2. */
@@ -77,11 +60,11 @@
 			grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 		}
 
-		.tabbed-content-item__tab {
+		.wp-block-humanmade-tabbed-content-tab {
 			grid-row: 1;
 		}
 
-		.tabbed-content-item__panel {
+		.wp-block-humanmade-tabbed-content-panel {
 			grid-row: 2;
 			grid-column: 1 / -1;
 		}
@@ -96,12 +79,12 @@
 			align-items: start;
 		}
 
-		.tabbed-content-item__tab {
+		.wp-block-humanmade-tabbed-content-tab {
 			grid-column: 1;
 			width: 100%;
 		}
 
-		.tabbed-content-item__panel {
+		.wp-block-humanmade-tabbed-content-panel {
 			grid-column: 2;
 			/* Rows are implicit (auto-flow), so `-1` only resolves to the
 			 * first explicit line. Span a large number of rows instead so

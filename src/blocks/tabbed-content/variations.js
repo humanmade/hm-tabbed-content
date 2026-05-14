@@ -2,13 +2,45 @@
  * Layout variations for the Tabbed Content block.
  *
  * Both variations share the same data model — a heading area followed by a
- * list of tabbed-content-item blocks — but render with different DOM and
- * styling. The `layout` attribute drives render.php and style.scss.
+ * list of tabbed-content-item blocks, each of which contains a locked tab
+ * and panel pair — but render with different DOM and styling. The `layout`
+ * attribute drives render.php and style.scss.
  */
 
-const sharedItem = ( title ) => [
+const itemTemplate = ( { tabHeading, panelHeading } ) => [
 	'humanmade/tabbed-content-item',
-	{ title },
+	{},
+	[
+		[
+			'humanmade/tabbed-content-tab',
+			{},
+			[
+				[
+					'core/heading',
+					{
+						level: 4,
+						content: tabHeading,
+						placeholder: 'Tab label…',
+					},
+				],
+			],
+		],
+		[
+			'humanmade/tabbed-content-panel',
+			{},
+			[
+				[
+					'core/heading',
+					{
+						level: 3,
+						content: panelHeading,
+						placeholder: 'Panel heading…',
+					},
+				],
+				[ 'core/paragraph', { placeholder: 'Panel content…' } ],
+			],
+		],
+	],
 ];
 
 const headerTemplate = [
@@ -31,7 +63,7 @@ const itemsTemplate = ( items ) => [
 			metadata: { name: 'Tabs' },
 			className: 'tabbed-content__items',
 		},
-		items.map( sharedItem ),
+		items.map( itemTemplate ),
 	],
 ];
 
@@ -46,9 +78,9 @@ const variations = [
 		innerBlocks: [
 			...headerTemplate,
 			...itemsTemplate( [
-				'First tab',
-				'Second tab',
-				'Third tab',
+				{ tabHeading: 'First tab', panelHeading: 'First panel' },
+				{ tabHeading: 'Second tab', panelHeading: 'Second panel' },
+				{ tabHeading: 'Third tab', panelHeading: 'Third panel' },
 			] ),
 		],
 		scope: [ 'inserter', 'transform' ],
@@ -62,10 +94,10 @@ const variations = [
 		innerBlocks: [
 			...headerTemplate,
 			...itemsTemplate( [
-				'First tab',
-				'Second tab',
-				'Third tab',
-				'Fourth tab',
+				{ tabHeading: 'First tab', panelHeading: 'First panel' },
+				{ tabHeading: 'Second tab', panelHeading: 'Second panel' },
+				{ tabHeading: 'Third tab', panelHeading: 'Third panel' },
+				{ tabHeading: 'Fourth tab', panelHeading: 'Fourth panel' },
 			] ),
 		],
 		scope: [ 'inserter', 'transform' ],

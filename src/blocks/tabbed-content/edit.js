@@ -45,9 +45,30 @@ export default function Edit( { attributes } ) {
 					className: 'tabbed-content__items',
 				},
 				[
-					[ 'humanmade/tabbed-content-item' ],
-					[ 'humanmade/tabbed-content-item' ],
-					[ 'humanmade/tabbed-content-item' ],
+					[
+						'humanmade/tabbed-content-item',
+						{},
+						[
+							[ 'humanmade/tabbed-content-tab' ],
+							[ 'humanmade/tabbed-content-panel' ],
+						],
+					],
+					[
+						'humanmade/tabbed-content-item',
+						{},
+						[
+							[ 'humanmade/tabbed-content-tab' ],
+							[ 'humanmade/tabbed-content-panel' ],
+						],
+					],
+					[
+						'humanmade/tabbed-content-item',
+						{},
+						[
+							[ 'humanmade/tabbed-content-tab' ],
+							[ 'humanmade/tabbed-content-panel' ],
+						],
+					],
 				],
 			],
 		],

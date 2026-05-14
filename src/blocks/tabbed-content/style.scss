@@ -2,8 +2,10 @@
  * Styles applied both on the front end and in the editor.
  *
  * Layout-agnostic structure: a header row, a body with a tablist and a
- * panels container. The is-layout-side and is-layout-top modifiers arrange
- * the tablist and panels differently; everything else is shared.
+ * panels container. Tab and panel inner content is freeform — the block
+ * provides only the chrome (tab affordance + panel sizing) so authors can
+ * put images, headings, cover blocks, etc. inside. The is-layout-side and
+ * is-layout-top modifiers arrange the tablist and panels differently.
  */
 
 .tabbed-content {
@@ -23,10 +25,6 @@
 	}
 
 	&__tab {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: var(--wp--preset--spacing--20, 0.5rem);
 		background: transparent;
 		border: 0;
 		border-radius: var(--wp--custom--border-radius--medium, 8px);
@@ -51,40 +49,26 @@
 		&.is-active {
 			opacity: 1;
 		}
-	}
 
-	&__tab-thumbnail img {
-		display: block;
-		width: 100%;
-		height: auto;
-		border-radius: inherit;
-	}
-
-	&__tab-title {
-		font-weight: 600;
+		/* Constrain images authored inside a tab so they behave like
+		 * thumbnails by default. Authors can override per-image. */
+		img {
+			display: block;
+			max-width: 100%;
+			height: auto;
+		}
 	}
 
 	&__panel {
-		display: grid;
-		gap: var(--wp--preset--spacing--40, 1rem);
 
 		&[hidden] {
 			display: none;
 		}
-	}
 
-	&__panel-content > * {
-		max-width: 100%;
-	}
-
-	&__panel-media {
-
-		img,
-		video {
-			display: block;
-			width: 100%;
-			height: auto;
-			border-radius: var(--wp--custom--border-radius--large, 12px);
+		/* The panel's inner blocks are wrapped by the tabbed-content-panel
+		 * block's save output — give it sensible sizing defaults. */
+		.tabbed-content__panel-content {
+			min-width: 0;
 		}
 	}
 
@@ -101,14 +85,6 @@
 			gap: var(--wp--preset--spacing--20, 0.5rem);
 		}
 
-		.tabbed-content__panels {
-			position: relative;
-		}
-
-		.tabbed-content__panel {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
 		@media (max-width: 781px) {
 
 			.tabbed-content__body {
@@ -117,7 +93,7 @@
 		}
 	}
 
-	/* Top layout: horizontal tablist, two-column panel below. */
+	/* Top layout: horizontal tablist, content panel below. */
 	&.is-layout-top {
 
 		.tabbed-content__tablist {
@@ -128,18 +104,6 @@
 		.tabbed-content__tab {
 			flex: 1 1 0;
 			min-width: 8rem;
-		}
-
-		.tabbed-content__panel {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			align-items: center;
-		}
-
-		@media (max-width: 781px) {
-
-			.tabbed-content__panel {
-				grid-template-columns: minmax(0, 1fr);
-			}
 		}
 	}
 }
