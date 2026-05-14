@@ -1,131 +1,86 @@
 /**
  * WordPress dependencies
  */
-import {
-	useBlockProps,
-	useInnerBlocksProps,
-	RichText,
-	MediaUpload,
-	MediaUploadCheck,
-	BlockControls,
-} from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useBlockProps, useInnerBlocksProps } from '@wordpress/block-editor';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
+import { STORE_NAME } from '../tabbed-content/store-name';
 
-const ALLOWED_BLOCKS = [ 'core/paragraph', 'core/buttons', 'core/list' ];
-const TEMPLATE = [ [ 'core/paragraph' ] ];
+const TEMPLATE = [
+	[ 'humanmade/tabbed-content-tab' ],
+	[ 'humanmade/tabbed-content-panel' ],
+];
+const ALLOWED_BLOCKS = [
+	'humanmade/tabbed-content-tab',
+	'humanmade/tabbed-content-panel',
+];
 
-export default function Edit( { attributes, setAttributes, clientId } ) {
-	const { title, id, url, alt } = attributes;
-
-	const isExpanded = useSelect(
+export default function Edit( { clientId } ) {
+	const { index, parentClientId, isSelectedOrInner, activeIndex } = useSelect(
 		( select ) => {
-			const { isBlockSelected, hasSelectedInnerBlock } =
-				select( 'core/block-editor' );
-			return (
-				isBlockSelected( clientId ) ||
-				hasSelectedInnerBlock( clientId, true )
-			);
+			const {
+				getBlockIndex,
+				getBlockRootClientId,
+				isBlockSelected,
+				hasSelectedInnerBlock,
+			} = select( 'core/block-editor' );
+			const groupId = getBlockRootClientId( clientId );
+			const tabbedContentClientId = groupId
+				? getBlockRootClientId( groupId )
+				: '';
+			return {
+				index: getBlockIndex( clientId ),
+				parentClientId: tabbedContentClientId,
+				isSelectedOrInner:
+					isBlockSelected( clientId ) ||
+					hasSelectedInnerBlock( clientId, true ),
+				activeIndex: select( STORE_NAME ).getActiveIndex(
+					tabbedContentClientId
+				),
+			};
 		},
 		[ clientId ]
 	);
 
+	const { setActiveIndex } = useDispatch( STORE_NAME );
+
+	// When this item (or anything inside it) becomes the selection, promote
+	// it to the active tab. Leaving the block does not reset — the last
+	// selected tab stays active.
+	useEffect( () => {
+		if (
+			isSelectedOrInner &&
+			index >= 0 &&
+			parentClientId &&
+			index !== activeIndex
+		) {
+			setActiveIndex( parentClientId, index );
+		}
+	}, [
+		isSelectedOrInner,
+		index,
+		activeIndex,
+		parentClientId,
+		setActiveIndex,
+	] );
+
+	const isActive = index === activeIndex;
+
 	const blockProps = useBlockProps( {
-		className: `tabbed-content-item ${ isExpanded ? 'is-open' : '' }`,
+		className: `tabbed-content-item ${ isActive ? 'is-active' : '' }`,
 	} );
 
-	const innerBlocksProps = useInnerBlocksProps(
-		{ className: 'tabbed-content-item__content' },
-		{
-			templateLock: false,
-			allowedBlocks: ALLOWED_BLOCKS,
-			template: TEMPLATE,
-		}
-	);
+	const innerBlocksProps = useInnerBlocksProps( blockProps, {
+		template: TEMPLATE,
+		templateLock: 'all',
+		allowedBlocks: ALLOWED_BLOCKS,
+		renderAppender: false,
+	} );
 
-	// Sync image data from Media Library when ID changes.
-	const { mediaUrl, mediaAlt } = useSelect(
-		( select ) => {
-			if ( ! id ) {
-				return {};
-			}
-			const media = select( 'core' ).getMedia( id );
-			return {
-				mediaUrl: media?.source_url,
-				mediaAlt: media?.alt_text,
-			};
-		},
-		[ id ]
-	);
-
-	useEffect( () => {
-		if ( id && mediaUrl && mediaUrl !== url ) {
-			setAttributes( { url: mediaUrl } );
-		}
-		if ( id && mediaAlt !== undefined && mediaAlt !== alt ) {
-			setAttributes( { alt: mediaAlt } );
-		}
-	}, [ id, mediaUrl, mediaAlt, url, alt, setAttributes ] );
-
-	const onSelectImage = ( media ) => {
-		setAttributes( {
-			id: media.id,
-			url: media.url,
-			alt: media.alt || '',
-		} );
-	};
-
-	const onRemoveImage = () => {
-		setAttributes( {
-			id: undefined,
-			url: '',
-			alt: '',
-		} );
-	};
-
-	return (
-		<>
-			<BlockControls>
-				<ToolbarGroup>
-					<MediaUploadCheck>
-						<MediaUpload
-							onSelect={ onSelectImage }
-							allowedTypes={ [ 'image', 'video' ] }
-							value={ id }
-							render={ ( { open } ) => (
-								<ToolbarButton onClick={ open }>
-									{ id ? 'Replace Media' : 'Add Media' }
-								</ToolbarButton>
-							) }
-						/>
-					</MediaUploadCheck>
-					{ id && (
-						<ToolbarButton onClick={ onRemoveImage }>
-							Remove Media
-						</ToolbarButton>
-					) }
-				</ToolbarGroup>
-			</BlockControls>
-
-			<div { ...blockProps } data-image-cover-url={ url || undefined }>
-				<RichText
-					tagName="h3"
-					className="tabbed-content-item__title"
-					value={ title }
-					onChange={ ( newTitle ) =>
-						setAttributes( { title: newTitle } )
-					}
-					placeholder="Enter title..."
-				/>
-
-				{ isExpanded && <div { ...innerBlocksProps } /> }
-			</div>
-		</>
-	);
+	return <div { ...innerBlocksProps } />;
 }

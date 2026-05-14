@@ -1,163 +1,78 @@
 /**
- * Internal dependencies
+ * Pure tab switching for the Tabbed Content block.
+ *
+ * The server renders all panels; this script just toggles the active state
+ * on click (and on Arrow/Home/End keys per the WAI-ARIA tabs pattern).
  */
-import { isVideo } from '../../utils';
 
-document.addEventListener( 'DOMContentLoaded', function () {
-	const containers = document.querySelectorAll( '.tabbed-content' );
-	containers.forEach( setupContainer );
+document.addEventListener( 'DOMContentLoaded', () => {
+	document.querySelectorAll( '.tabbed-content' ).forEach( setupContainer );
 } );
 
 function setupContainer( container ) {
-	const items = container.querySelectorAll( '.tabbed-content-item' );
-	const coverImageContainer = container.querySelector(
-		'.tabbed-content-cover-image'
+	const tabs = Array.from(
+		container.querySelectorAll( '.tabbed-content__tab' )
+	);
+	const panels = Array.from(
+		container.querySelectorAll( '.tabbed-content__panel' )
 	);
 
-	if ( ! coverImageContainer || ! items.length ) {
+	if ( tabs.length === 0 || panels.length !== tabs.length ) {
 		return;
 	}
 
-	// Create cover images/videos for each item
-	const coverImages = [];
-	items.forEach( ( item, index ) => {
-		const mediaUrl = item.getAttribute( 'data-image-cover-url' );
-		if ( mediaUrl ) {
-			let element;
-			if ( isVideo( mediaUrl ) ) {
-				element = document.createElement( 'video' );
-				element.src = mediaUrl;
-				element.autoplay = true;
-				element.loop = true;
-				element.muted = true;
-				element.playsInline = true;
-			} else {
-				element = document.createElement( 'img' );
-				element.src = mediaUrl;
-				element.alt = '';
-			}
-			element.className = 'cover-image';
-			element.style.opacity = '0';
-			element.style.transition =
-				'opacity 0.35s cubic-bezier(0.4, 0, 0.1, 1)';
-			element.setAttribute( 'data-index', index );
-			coverImageContainer.appendChild( element );
-			coverImages.push( element );
-		} else {
-			coverImages.push( null );
-		}
-	} );
-
-	let currentIndex = -1;
-
-	function getContentHeight( content ) {
-		const currentHeight = content.style.height;
-		const currentDisplay = content.style.display;
-		content.style.height = 'auto';
-		content.style.display = 'block';
-		const height = content.scrollHeight;
-		content.style.height = currentHeight;
-		content.style.display = currentDisplay;
-		return height;
-	}
-
-	function selectItem( index ) {
-		if ( index === currentIndex || index < 0 || index >= items.length ) {
+	function selectTab( index, focusTab = false ) {
+		if ( index < 0 || index >= tabs.length ) {
 			return;
 		}
 
-		const previousIndex = currentIndex;
-		currentIndex = index;
+		tabs.forEach( ( tab, i ) => {
+			const isActive = i === index;
+			tab.classList.toggle( 'is-active', isActive );
+			tab.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+			tab.setAttribute( 'tabindex', isActive ? '0' : '-1' );
+		} );
 
-		items.forEach( ( item, i ) => {
-			const content = item.querySelector(
-				'.tabbed-content-item__content'
-			);
-
-			if ( i === index ) {
-				const height = getContentHeight( content );
-				content.style.height = '0px';
-				content.classList.add( 'is-open' );
-				item.classList.add( 'is-open' );
-
-				// Force reflow
-				void content.offsetHeight;
-
-				content.style.height = height + 'px';
-
-				setTimeout( () => {
-					if ( content.classList.contains( 'is-open' ) ) {
-						content.style.height = 'auto';
-					}
-				}, 350 );
+		panels.forEach( ( panel, i ) => {
+			const isActive = i === index;
+			panel.classList.toggle( 'is-active', isActive );
+			if ( isActive ) {
+				panel.removeAttribute( 'hidden' );
 			} else {
-				if ( content.classList.contains( 'is-open' ) ) {
-					const height = content.scrollHeight;
-					content.style.height = height + 'px';
-
-					void content.offsetHeight;
-
-					content.style.height = '0px';
-				}
-
-				content.classList.remove( 'is-open' );
-				item.classList.remove( 'is-open' );
+				panel.setAttribute( 'hidden', '' );
 			}
 		} );
 
-		coverImages.forEach( ( img, i ) => {
-			if ( ! img ) {
-				return;
-			}
-			if ( i === index ) {
-				img.style.zIndex = '2';
-				img.style.opacity = '1';
-			} else if ( i === previousIndex ) {
-				img.style.zIndex = '1';
-				img.style.opacity = '0';
-			} else {
-				img.style.zIndex = '1';
-				img.style.opacity = '0';
-			}
-		} );
+		if ( focusTab ) {
+			tabs[ index ].focus();
+		}
 	}
 
-	const headers = container.querySelectorAll( '.tabbed-content-item__title' );
-	headers.forEach( ( header, index ) => {
-		header.setAttribute( 'role', 'button' );
-		header.setAttribute( 'tabindex', '0' );
+	tabs.forEach( ( tab, index ) => {
+		tab.addEventListener( 'click', () => selectTab( index ) );
 
-		header.addEventListener( 'click', () => {
-			selectItem( index );
-		} );
-
-		header.addEventListener( 'keydown', ( e ) => {
-			if ( e.key === 'Enter' || e.key === ' ' ) {
-				e.preventDefault();
-				selectItem( index );
+		tab.addEventListener( 'keydown', ( event ) => {
+			let next = null;
+			switch ( event.key ) {
+				case 'ArrowRight':
+				case 'ArrowDown':
+					next = ( index + 1 ) % tabs.length;
+					break;
+				case 'ArrowLeft':
+				case 'ArrowUp':
+					next = ( index - 1 + tabs.length ) % tabs.length;
+					break;
+				case 'Home':
+					next = 0;
+					break;
+				case 'End':
+					next = tabs.length - 1;
+					break;
+				default:
+					return;
 			}
+			event.preventDefault();
+			selectTab( next, true );
 		} );
 	} );
-
-	let resizeTimeout;
-	window.addEventListener( 'resize', () => {
-		clearTimeout( resizeTimeout );
-		resizeTimeout = setTimeout( () => {
-			items.forEach( ( item, i ) => {
-				const content = item.querySelector(
-					'.tabbed-content-item__content'
-				);
-				if (
-					i === currentIndex &&
-					content.classList.contains( 'is-open' )
-				) {
-					content.style.height = 'auto';
-				}
-			} );
-		}, 100 );
-	} );
-
-	if ( items.length > 0 ) {
-		selectItem( 0 );
-	}
 }

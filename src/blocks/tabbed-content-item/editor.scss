@@ -1,17 +1,8 @@
-.tabbed-content-item {
-	// Hide content when not expanded.
-	&:not(.is-open) {
-		.tabbed-content-item__content {
-			display: none;
-		}
-	}
-
-	// Override frontend styles in editor when expanded.
-	&.is-open {
-		.tabbed-content-item__content {
-			height: auto !important;
-			opacity: 1 !important;
-			overflow: visible !important;
-		}
-	}
-}
+/**
+ * Editor-only styles for tabbed-content-item.
+ *
+ * Item layout (tab + panel placement) is owned by the parent block's
+ * editor.scss, which uses `display: contents` on the item wrapper to
+ * project the tab and panel directly into its grid. This file is reserved
+ * for any future item-internal editor styling.
+ */

@@ -2,130 +2,162 @@
  * WordPress dependencies
  */
 import { useBlockProps, useInnerBlocksProps } from '@wordpress/block-editor';
-import { useSelect } from '@wordpress/data';
+import { createBlock } from '@wordpress/blocks';
+import { Button } from '@wordpress/components';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { useEffect } from '@wordpress/element';
+import { plus } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import './editor.scss';
-import { isVideo } from '../../utils';
 
-const ALLOWED_BLOCKS = [ 'core/group' ];
-const TEMPLATE = [
-	[
-		'core/group',
-		{
-			lock: { move: true, remove: true },
-			className: 'tabbed-content-header',
-		},
-		[
-			[ 'core/heading', { level: 2, placeholder: 'Add heading...' } ],
-			[ 'core/paragraph', { placeholder: 'Add description...' } ],
-			[ 'core/buttons' ],
-		],
-	],
-	[
-		'core/group',
-		{
-			lock: {
-				move: true,
-				remove: true,
-			},
-			className: 'tabbed-content-items',
-		},
-		[
-			[ 'humanmade/tabbed-content-item' ],
-			[ 'humanmade/tabbed-content-item' ],
-			[ 'humanmade/tabbed-content-item' ],
-		],
-	],
-];
+const ITEMS_GROUP_ALLOWED_BLOCKS = [ 'humanmade/tabbed-content-item' ];
 
-export default function Edit( { clientId } ) {
+export default function Edit( { attributes, clientId } ) {
+	const { layout = 'side' } = attributes;
+
 	const blockProps = useBlockProps( {
-		className: 'tabbed-content',
+		className: `tabbed-content is-layout-${ layout }`,
+		'data-layout': layout,
 	} );
 
-	const { selectedImageUrl } = useSelect(
+	// Template is provided per-variation; the block-level template here is a
+	// safety net so the block is still usable if inserted programmatically.
+	// Note: we intentionally do not pass `allowedBlocks` on the tabbed-
+	// content block itself because Gutenberg applies that restriction
+	// transitively to every descendant. The structural integrity is
+	// enforced via templateLock on the children and via ancestor/parent
+	// restrictions on the item/tab/panel block types.
+	const innerBlocksProps = useInnerBlocksProps( blockProps, {
+		template: [
+			[
+				'core/group',
+				{
+					lock: { move: true, remove: true },
+					metadata: { name: 'Heading' },
+					className: 'tabbed-content__header',
+				},
+				[
+					[
+						'core/heading',
+						{ level: 2, placeholder: 'Add a heading…' },
+					],
+				],
+			],
+			[
+				'core/group',
+				{
+					metadata: { name: 'Tabs' },
+					className: 'tabbed-content__items',
+				},
+				[
+					[
+						'humanmade/tabbed-content-item',
+						{},
+						[
+							[ 'humanmade/tabbed-content-tab' ],
+							[ 'humanmade/tabbed-content-panel' ],
+						],
+					],
+					[
+						'humanmade/tabbed-content-item',
+						{},
+						[
+							[ 'humanmade/tabbed-content-tab' ],
+							[ 'humanmade/tabbed-content-panel' ],
+						],
+					],
+					[
+						'humanmade/tabbed-content-item',
+						{},
+						[
+							[ 'humanmade/tabbed-content-tab' ],
+							[ 'humanmade/tabbed-content-panel' ],
+						],
+					],
+				],
+			],
+		],
+		renderAppender: false,
+	} );
+
+	// Locate the items Group child by its `tabbed-content__items` className so
+	// we can append a new item into it when the "Add tab" button is clicked.
+	const { itemsGroupClientId, itemsGroupChildren } = useSelect(
 		( select ) => {
-			const {
-				getBlocksByClientId,
-				isBlockSelected,
-				hasSelectedInnerBlock,
-			} = select( 'core/block-editor' );
-			const blocks =
-				getBlocksByClientId( clientId )[ 0 ]?.innerBlocks || [];
-
-			const itemsGroup = blocks.find(
-				( block ) =>
-					block.name === 'core/group' &&
-					block.attributes?.className === 'tabbed-content-items'
-			);
-
-			const items = itemsGroup?.innerBlocks || [];
-
-			let selectedBlock = items[ 0 ];
-
-			for ( const block of items ) {
-				if (
-					isBlockSelected( block.clientId ) ||
-					hasSelectedInnerBlock( block.clientId, true )
-				) {
-					selectedBlock = block;
-					break;
-				}
-			}
-
+			const { getBlock } = select( 'core/block-editor' );
+			const ownBlock = getBlock( clientId );
+			const itemsGroup = ownBlock?.innerBlocks?.find( ( child ) => {
+				const className = child.attributes?.className ?? '';
+				return className.includes( 'tabbed-content__items' );
+			} );
 			return {
-				innerBlocks: blocks,
-				selectedImageUrl: selectedBlock?.attributes?.url,
+				itemsGroupClientId: itemsGroup?.clientId,
+				itemsGroupChildren: itemsGroup?.innerBlocks ?? [],
 			};
 		},
 		[ clientId ]
 	);
 
-	const innerBlocksProps = useInnerBlocksProps(
-		{
-			className: 'tabbed-content-container__left',
-		},
-		{
-			allowedBlocks: ALLOWED_BLOCKS,
-			template: TEMPLATE,
-			renderAppender: false,
+	const { replaceInnerBlocks, selectBlock, updateBlockListSettings } =
+		useDispatch( 'core/block-editor' );
+
+	// Restrict the items Group to only allow tabbed-content-item children.
+	// We set this at runtime via the data store rather than passing
+	// allowedBlocks on the parent block (which would cascade restrictions
+	// onto every descendant, including the freeform tab/panel content).
+	useEffect( () => {
+		if ( ! itemsGroupClientId ) {
+			return;
 		}
-	);
+		updateBlockListSettings( itemsGroupClientId, {
+			allowedBlocks: ITEMS_GROUP_ALLOWED_BLOCKS,
+		} );
+	}, [ itemsGroupClientId, updateBlockListSettings ] );
+
+	const onAddTab = () => {
+		if ( ! itemsGroupClientId ) {
+			return;
+		}
+		const newItem = createBlock( 'humanmade/tabbed-content-item', {}, [
+			createBlock( 'humanmade/tabbed-content-tab' ),
+			createBlock( 'humanmade/tabbed-content-panel' ),
+		] );
+		// insertBlock validates against canInsertBlockType, which currently
+		// rejects programmatic insertions into a freshly templated group
+		// regardless of our allowedBlocks. replaceInnerBlocks bypasses that
+		// validation and is the documented escape hatch for blocks that
+		// fully own their inner-blocks structure.
+		replaceInnerBlocks(
+			itemsGroupClientId,
+			[ ...itemsGroupChildren, newItem ],
+			false
+		);
+		// Select the new item so the editor surfaces it as the active tab.
+		selectBlock( newItem.clientId );
+	};
+
+	const { children: innerBlocksChildren, ...wrapperProps } = innerBlocksProps;
 
 	return (
-		<div { ...blockProps }>
-			<div className="tabbed-content-container">
-				<div { ...innerBlocksProps } />
-				<div className="tabbed-content-container__right">
-					<div className="tabbed-content-cover-image">
-						{ selectedImageUrl ? ( // eslint-disable-line no-nested-ternary
-							isVideo( selectedImageUrl ) ? (
-								<video
-									src={ selectedImageUrl }
-									autoPlay
-									loop
-									muted
-									playsInline
-									className="cover-image-desktop"
-								/>
-							) : (
-								<img
-									src={ selectedImageUrl }
-									alt=""
-									className="cover-image-desktop"
-								/>
-							)
-						) : (
-							<div className="tabbed-content-cover-image__placeholder">
-								Select media
-							</div>
-						) }
-					</div>
+		<div { ...wrapperProps }>
+			{ innerBlocksChildren }
+			{ itemsGroupClientId && (
+				<div
+					className="tabbed-content__appender"
+					contentEditable={ false }
+				>
+					<Button
+						variant="secondary"
+						icon={ plus }
+						onClick={ onAddTab }
+					>
+						Add tab
+					</Button>
 				</div>
-			</div>
+			) }
 		</div>
 	);
 }
