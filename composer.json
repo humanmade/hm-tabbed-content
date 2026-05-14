@@ -1,7 +1,7 @@
 {
 	"name": "humanmade/hm-tabbed-content",
 	"description": "Tabbed content block where each tab reveals an associated image or video.",
-	"type": "wordpress-muplugin",
+	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {
 		"php": ">=8.0"
