@@ -16,6 +16,9 @@ function bootstrap(): void {
  * Register the Tabbed Content blocks from the compiled build directory.
  */
 function register_blocks(): void {
-	register_block_type( PLUGIN_PATH . '/build/blocks/tabbed-content' );
+	// Children must be registered before the parents that template them.
+	register_block_type( PLUGIN_PATH . '/build/blocks/tabbed-content-tab' );
+	register_block_type( PLUGIN_PATH . '/build/blocks/tabbed-content-panel' );
 	register_block_type( PLUGIN_PATH . '/build/blocks/tabbed-content-item' );
+	register_block_type( PLUGIN_PATH . '/build/blocks/tabbed-content' );
 }

@@ -1,160 +1,109 @@
 /**
- * Styles applied both on the front of the site and in the editor.
+ * Styles applied both on the front end and in the editor.
+ *
+ * Layout-agnostic structure: a header row, a body with a tablist and a
+ * panels container. Tab and panel inner content is freeform — the block
+ * provides only the chrome (tab affordance + panel sizing) so authors can
+ * put images, headings, cover blocks, etc. inside. The is-layout-side and
+ * is-layout-top modifiers arrange the tablist and panels differently.
  */
 
 .tabbed-content {
 
-	&-container {
+	&__header {
+		margin-bottom: var(--wp--preset--spacing--50, 1.5rem);
+	}
+
+	&__body {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 40px;
-		min-height: 600px;
-
-		@media (max-width: 782px) {
-			grid-template-columns: 1fr;
-			min-height: auto;
-		}
+		gap: var(--wp--preset--spacing--50, 1.5rem);
 	}
 
-	.tabbed-content-container__left {
-		height: 100%;
-		width: 100%;
+	&__tablist {
 		display: flex;
-		flex-flow: column;
-		justify-content: space-between;
+		gap: var(--wp--preset--spacing--30, 0.75rem);
 	}
 
-	.tabbed-content-header {
-		margin-bottom: var(--wp--preset--spacing--60);
-		margin-top: 0;
-		align-self: flex-start;
-	}
+	&__tab {
+		background: transparent;
+		border: 0;
+		border-radius: var(--wp--custom--border-radius--medium, 8px);
+		color: inherit;
+		cursor: pointer;
+		font: inherit;
+		padding: var(--wp--preset--spacing--30, 0.75rem);
+		text-align: left;
+		transition: background-color 0.2s ease, opacity 0.2s ease;
+		opacity: 0.7;
 
-	.tabbed-content-item {
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		overflow: visible;
-		opacity: 0.5;
-		transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		position: relative;
-
-		&:last-child {
-			margin-bottom: 0;
-		}
-
-		&:hover {
-			opacity: 1;
-
-			.wp-block-heading {
-				text-shadow: 0 0 5px rgba(255, 255, 255, .2);
-			}
-		}
-
-		&.is-open {
+		&:hover,
+		&:focus-visible {
 			opacity: 1;
 		}
 
-		.tabbed-content-item__title {
-			cursor: pointer;
-			display: flex;
-			transition: background-color 0.3s ease;
-			position: relative;
-			z-index: 2;
-			outline: none;
-			font-size: var(--wp--preset--font-size--h-4);
-			margin-top: 0;
-			margin-bottom: var(--wp--preset--spacing--30);
+		&:focus-visible {
+			outline: 2px solid currentColor;
+			outline-offset: 2px;
 		}
 
-		.tabbed-content-item__content {
-			height: 0;
-			opacity: 0;
-			transition:
-				height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-				opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-			overflow: hidden;
-			pointer-events: none;
-			will-change: height, opacity;
-		}
-
-		&.is-open .tabbed-content-item__content {
+		&.is-active {
 			opacity: 1;
-			pointer-events: auto;
-			position: static;
-			top: auto;
+		}
+
+		/* Constrain images authored inside a tab so they behave like
+		 * thumbnails by default. Authors can override per-image. */
+		img {
+			display: block;
+			max-width: 100%;
+			height: auto;
 		}
 	}
 
-	.tabbed-content-container__right {
-		display: flex;
-		align-items: flex-end;
-		position: relative;
+	&__panel {
 
-		@media (max-width: 782px) {
+		&[hidden] {
 			display: none;
 		}
-	}
 
-	.tabbed-content-cover-image {
-		width: 100%;
-		height: 100%;
-		display: grid;
-		align-items: center;
-		justify-items: center;
-
-		.cover-image {
-			border-radius: var(--wp--preset--border-radius--lg);
-			grid-area: 1 / 1;
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			z-index: 0;
-			opacity: 0;
+		/* The panel's inner blocks are wrapped by the tabbed-content-panel
+		 * block's save output — give it sensible sizing defaults. */
+		.tabbed-content__panel-content {
+			min-width: 0;
 		}
 	}
-}
 
-.cover-image-desktop {
-	display: block;
-}
+	/* Side layout: vertical tablist on the left, single-column panel on the right. */
+	&.is-layout-side {
 
-.tabbed-content-item__image {
-	aspect-ratio: 4 / 5;
-	overflow: hidden;
+		.tabbed-content__body {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+			align-items: start;
+		}
 
-	img,
-	video {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		display: block;
-	}
-}
+		.tabbed-content__tablist {
+			flex-direction: column;
+			gap: var(--wp--preset--spacing--20, 0.5rem);
+		}
 
-.tabbed-content-cover-image {
-	.cover-image {
-		aspect-ratio: 4 / 5;
-	}
-}
+		@media (max-width: 781px) {
 
-@media (min-width: 782px) {
-	.tabbed-content-item figure,
-	.tabbed-content-item .tabbed-content-item__image {
-		display: none !important;
-	}
-}
-
-@media (max-width: 782px) {
-	.cover-image-desktop {
-		display: none !important;
+			.tabbed-content__body {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
 	}
 
-	.tabbed-content-item__image {
-		aspect-ratio: 1;
-	}
+	/* Top layout: horizontal tablist, content panel below. */
+	&.is-layout-top {
 
-	.tabbed-content-cover-image .cover-image {
-		aspect-ratio: 1;
+		.tabbed-content__tablist {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+
+		.tabbed-content__tab {
+			flex: 1 1 0;
+			min-width: 8rem;
+		}
 	}
 }

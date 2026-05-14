@@ -1,144 +1,106 @@
-.tabbed-content {
-	max-width: var(--wp--style--global--content-size);
+/**
+ * Editor-only adjustments for the Tabbed Content block.
+ *
+ * The editor approximates the front-end tab UI: tabs render as a row (top
+ * layout) or column (side layout) and only the active item's panel is
+ * visible. Each tabbed-content-item uses `display: contents` so its tab
+ * and panel children become direct grid children of the items group.
+ */
 
-	&-container {
+.wp-block-humanmade-tabbed-content {
+
+	/* Items group is the block-list layout container — item blocks are its
+	 * direct children. Turn it into a grid in both layouts. */
+	.tabbed-content__items {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 40px;
-		align-items: start;
+		gap: var(--wp--preset--spacing--40, 1rem);
 	}
 
-	.tabbed-content-container__right {
-		aspect-ratio: 4 / 5;
-	}
-
-	.tabbed-content-cover-image {
-		width: 100%;
-		aspect-ratio: 4 / 5;
-		background: transparent;
-		border-radius: 12px;
+	/* Custom appender — a sibling of the items group, offering an obvious
+	 * "Add tab" affordance since the items group is locked and its own
+	 * native appender is subtle. */
+	.tabbed-content__appender {
 		display: flex;
-		align-items: center;
 		justify-content: center;
-		overflow: hidden;
+		margin-top: var(--wp--preset--spacing--40, 1rem);
+	}
 
-		img,
-		video {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			display: block;
-			border-radius: 16px;
-		}
+	/* Item wrappers project their tab + panel directly into the grid. */
+	.tabbed-content-item {
+		display: contents;
+	}
 
-		&__placeholder {
-			width: 100%;
-			height: 100%;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: rgba(255, 255, 255, 0.5);
-			border: 2px solid rgba(255, 255, 255, 1);
-			border-radius: 12px;
-			color: rgba(255, 255, 255, 1);
-			font-size: 16px;
-			font-weight: 500;
+	.wp-block-humanmade-tabbed-content-tab {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--wp--preset--spacing--20, 0.5rem);
+		padding: var(--wp--preset--spacing--30, 0.75rem);
+		border: 1px solid rgba(0, 0, 0, 0.08);
+		border-radius: 8px;
+		background: transparent;
+		cursor: pointer;
+		opacity: 0.7;
+		transition: opacity 0.15s ease, border-color 0.15s ease;
+
+		&:hover,
+		&:focus-within {
+			opacity: 1;
 		}
 	}
 
-	.tabbed-content-item {
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 8px;
-		padding: 1rem;
-		background: transparent;
-		transition: all 0.2s ease;
+	.tabbed-content-item.is-active .wp-block-humanmade-tabbed-content-tab {
+		opacity: 1;
+		border-color: rgba(0, 0, 0, 0.4);
+	}
 
-		&:hover {
-			border-color: rgba(255, 255, 255, 0.4);
-			background: rgba(255, 255, 255, 0.05);
+	.wp-block-humanmade-tabbed-content-panel {
+		min-width: 0;
+	}
+
+	.tabbed-content-item:not(.is-active) .wp-block-humanmade-tabbed-content-panel {
+		display: none;
+	}
+
+	/* Top layout: tabs across the top row, active panel spanning row 2. */
+	&.is-layout-top {
+
+		.tabbed-content__items {
+			grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 		}
 
-		&__title {
-			margin: 0 0 1rem 0;
-			font-size: 1.25rem;
-			font-weight: 600;
-			cursor: pointer;
-
-			&:empty::before {
-				content: attr(placeholder);
-				color: rgba(255, 255, 255, 0.5);
-			}
+		.wp-block-humanmade-tabbed-content-tab {
+			grid-row: 1;
 		}
 
-		&__image-preview {
-			margin: 1rem 0;
-			aspect-ratio: 4 / 5;
+		.wp-block-humanmade-tabbed-content-panel {
+			grid-row: 2;
+			grid-column: 1 / -1;
+		}
+	}
 
-			img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				border-radius: 4px;
-			}
+	/* Side layout: vertical tab column on the left, active panel on the
+	 * right spanning all rows. */
+	&.is-layout-side {
+
+		.tabbed-content__items {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+			align-items: start;
 		}
 
-		&__image-placeholder {
-			margin: 1rem 0;
-			padding: 2rem;
-			background: rgba(255, 255, 255, 0.1);
-			border: 2px dashed rgba(255, 255, 255, 0.3);
-			border-radius: 4px;
-			text-align: center;
-			aspect-ratio: 4 / 5;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-
-			button {
-				background: transparent;
-				border: 1px solid rgba(255, 255, 255, 0.5);
-				color: inherit;
-			}
+		.wp-block-humanmade-tabbed-content-tab {
+			grid-column: 1;
+			width: 100%;
 		}
 
-		&__content {
-			margin-top: 1rem;
-
-			p,
-			figure {
-				display: block !important;
-				background: transparent !important;
-			}
-
-			p {
-				max-height: 100%;
-				opacity: 1;
-				position: relative;
-				background: transparent;
-			}
-
-			.wp-block-paragraph,
-			.wp-block-buttons,
-			.wp-block-button {
-				background: transparent !important;
-			}
-		}
-
-		&.is-collapsed {
-			.tabbed-content-item__image-preview,
-			.tabbed-content-item__image-placeholder,
-			.tabbed-content-item__content {
-				display: none;
-			}
-
-			.tabbed-content-item__title {
-				margin-bottom: 0;
-			}
-		}
-
-		&.is-expanded {
-			border-color: rgba(255, 255, 255, 0.5);
-			background: rgba(255, 255, 255, 0.08);
+		.wp-block-humanmade-tabbed-content-panel {
+			grid-column: 2;
+			/* Rows are implicit (auto-flow), so `-1` only resolves to the
+			 * first explicit line. Span a large number of rows instead so
+			 * the active panel always reaches the bottom of the tab
+			 * column. */
+			grid-row: 1 / span 9999;
+			align-self: start;
 		}
 	}
 }
