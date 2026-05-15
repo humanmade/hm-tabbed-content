@@ -18,9 +18,32 @@ const ITEMS_GROUP_ALLOWED_BLOCKS = [ 'humanmade/tabbed-content-item' ];
 export default function Edit( { attributes, clientId } ) {
 	const { layout = 'side' } = attributes;
 
+	// Locate the items Group child by its `tabbed-content__items` className so
+	// we can append a new item into it when the "Add tab" button is clicked.
+	// Must come before useBlockProps so --tab-count is available.
+	const { itemsGroupClientId, itemsGroupChildren } = useSelect(
+		( select ) => {
+			const { getBlock } = select( 'core/block-editor' );
+			const ownBlock = getBlock( clientId );
+			const itemsGroup = ownBlock?.innerBlocks?.find( ( child ) => {
+				const className = child.attributes?.className ?? '';
+				return className.includes( 'tabbed-content__items' );
+			} );
+			return {
+				itemsGroupClientId: itemsGroup?.clientId,
+				itemsGroupChildren: itemsGroup?.innerBlocks ?? [],
+			};
+		},
+		[ clientId ]
+	);
+
 	const blockProps = useBlockProps( {
 		className: `tabbed-content is-layout-${ layout }`,
 		'data-layout': layout,
+		// Expose the tab count as a CSS custom property so the editor stylesheet
+		// can set grid-template-rows to an explicit repeat(), which allows
+		// grid-row: 1 / -1 to resolve correctly on the active panel.
+		style: { '--tab-count': itemsGroupChildren.length || 1 },
 	} );
 
 	// Template is provided per-variation; the block-level template here is a
@@ -82,24 +105,6 @@ export default function Edit( { attributes, clientId } ) {
 		],
 		renderAppender: false,
 	} );
-
-	// Locate the items Group child by its `tabbed-content__items` className so
-	// we can append a new item into it when the "Add tab" button is clicked.
-	const { itemsGroupClientId, itemsGroupChildren } = useSelect(
-		( select ) => {
-			const { getBlock } = select( 'core/block-editor' );
-			const ownBlock = getBlock( clientId );
-			const itemsGroup = ownBlock?.innerBlocks?.find( ( child ) => {
-				const className = child.attributes?.className ?? '';
-				return className.includes( 'tabbed-content__items' );
-			} );
-			return {
-				itemsGroupClientId: itemsGroup?.clientId,
-				itemsGroupChildren: itemsGroup?.innerBlocks ?? [],
-			};
-		},
-		[ clientId ]
-	);
 
 	const { replaceInnerBlocks, selectBlock, updateBlockListSettings } =
 		useDispatch( 'core/block-editor' );
