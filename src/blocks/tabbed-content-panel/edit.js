@@ -10,13 +10,17 @@ const TEMPLATE = [
 
 export default function Edit() {
 	const blockProps = useBlockProps( {
-		className: 'tabbed-content__panel-content',
+		className: 'tabbed-content__panel',
 	} );
 
-	const innerBlocksProps = useInnerBlocksProps( blockProps, {
-		template: TEMPLATE,
-		templateLock: false,
-	} );
+	const innerBlocksProps = useInnerBlocksProps(
+		{ className: 'tabbed-content__panel-content' },
+		{ template: TEMPLATE, templateLock: false }
+	);
 
-	return <div { ...innerBlocksProps } />;
+	return (
+		<div { ...blockProps }>
+			<div { ...innerBlocksProps } />
+		</div>
+	);
 }

@@ -85,6 +85,10 @@
 
 		.tabbed-content__items {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+			/* Explicit row count lets grid-row: 1 / -1 resolve on the panel.
+			 * --tab-count is set by the block's Edit component so it tracks
+			 * the live number of items. */
+			grid-template-rows: repeat(var(--tab-count, 5), auto);
 			align-items: start;
 		}
 
@@ -95,12 +99,10 @@
 
 		.wp-block-humanmade-tabbed-content-panel {
 			grid-column: 2;
-			/* Rows are implicit (auto-flow), so `-1` only resolves to the
-			 * first explicit line. Span a large number of rows instead so
-			 * the active panel always reaches the bottom of the tab
-			 * column. */
-			grid-row: 1 / span 9999;
-			align-self: start;
+			/* Span all tab rows so the panel fills the full left-column
+			 * height. Works because grid-template-rows is now explicit. */
+			grid-row: 1 / -1;
+			align-self: stretch;
 		}
 	}
 }
